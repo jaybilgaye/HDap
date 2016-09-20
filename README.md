@@ -20,7 +20,7 @@ HDap Ansible playbooks will help to deploy hadoop cluster for Hortonworks, Cloud
 
 # Configuration
 * For running playbook,you need to configure hosts, group_vars/all, and group_vars/passwords.yml files only.
-* For more details about hosts and group_vars files see [hosts.md](https://github.com/prakulS/project/wiki/hosts.md) and [all_vars.md](https://github.com/prakulS/project/wiki/all_vars.md)
+* For more details about hosts and group_vars files see [hosts.md](https://github.com/persistentsystems/HDap/blob/master/hosts.md) and [all_vars.md](https://github.com/persistentsystems/HDap/blob/master/all_vars.md)
 
 
 # Installation
