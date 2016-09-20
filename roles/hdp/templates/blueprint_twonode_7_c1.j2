@@ -1,0 +1,230 @@
+{
+   "configurations" : [
+        { "global": {
+                 "hive_metastore_user_passwd": "{{ HIVE_METASTORE_PASSWORD }}"
+        }
+      },
+     {
+       "core-site": {
+            "hadoop.proxyuser.hive.groups": "*",
+            "hadoop.proxyuser.hive.hosts": "*",
+            "hadoop.proxyuser.hcat.groups": "*",
+            "hadoop.proxyuser.hcat.hosts": "*"
+        }
+    },
+    {
+      "hdfs-site" : {
+        "dfs.replication" : "1",
+        "dfs.datanode.data.dir": "{{DATANODE_DATA_DIR}}"
+      }
+    },
+    {
+       "hadoop-env" : {
+           "hdfs_log_dir_prefix" : "{{ LOG_DIR }}/hadoop"
+        }
+     },
+     {
+       "yarn-site" : {
+           "yarn.timeline-service.store-class" : "org.apache.hadoop.yarn.server.timeline.LeveldbTimelineStore",
+           "yarn.nodemanager.log-dirs" : "{{ LOG_DIR }}/yarn/log"
+        }
+     },
+     {
+       "yarn-env" : {
+           "yarn_log_dir_prefix" : "{{ LOG_DIR }}/yarn"
+        }
+     },
+     {
+       "zookeeper-env" : {
+           "zk_log_dir" : "{{ LOG_DIR }}/zookeeper"
+        }
+      },
+      {
+      "mapred-env" : {
+           "mapred_log_dir_prefix" : "{{ LOG_DIR }}/hadoop-mapreduce"
+        }
+      },
+      {
+      "spark-env" : {
+           "spark_log_dir" : "{{ LOG_DIR }}/spark"
+        }
+      },
+     {
+       "tez-site" : {
+       "tez.am.client.am.port-range": "12996"
+       }
+     },
+     {
+       "hbase-site" : {
+       "hbase.rootdir": "hdfs://{{hostsIP.stdout_lines[0]}}:8020/apps/hbase/data"
+       }
+     },
+     {
+       "hive-site": {
+            "javax.jdo.option.ConnectionDriverName" : "org.postgresql.Driver",
+            "javax.jdo.option.ConnectionPassword" : "{{HIVE_METASTORE_PASSWORD}}",
+            "javax.jdo.option.ConnectionURL" : "jdbc:postgresql://{{namenode_hostname}}:5432/hive",
+            "javax.jdo.option.ConnectionUserName" : "hive",
+            "hive.server2.enable.doAs" : "false"
+        }
+        },
+      {
+      "hive-env" : {
+           "hcat_log_dir" : "{{ LOG_DIR }}/webhcat",
+           "hive_log_dir" :"{{ LOG_DIR }}/hive",
+           "hive_ambari_database" : "PostgreSQL",
+           "hive_database" : "Existing PostgreSQL Database",
+           "hive_database_type" : "postgres"
+        }
+      }
+ ],
+  "host_groups" : [
+    {
+      "name" : "master",    
+      "components" : [
+        {
+          "name" : "NAMENODE"
+        },
+	{
+          "name" : "APP_TIMELINE_SERVER"
+        },
+        {% if counter.stdout!='2' %}
+        {
+          "name" : "RESOURCEMANAGER"
+        },
+        {% endif %}
+        {
+          "name" : "HISTORYSERVER"
+        },
+        {
+          "name" : "ZOOKEEPER_SERVER"
+        },
+        {
+          "name" : "SPARK_JOBHISTORYSERVER"
+        },
+	{
+          "name" : "HDFS_CLIENT"
+        },
+        {
+          "name" : "YARN_CLIENT"
+        },
+        {
+          "name" : "ZOOKEEPER_CLIENT"
+        },
+        {
+          "name" : "PIG"
+        },
+        {
+          "name" : "TEZ_CLIENT"
+        },
+        {
+          "name" : "SPARK_CLIENT"
+	},
+        {
+          "name" : "HIVE_CLIENT"
+        },
+        {
+          "name" : "HCAT"
+        },
+        {
+          "name" : "MAPREDUCE2_CLIENT"
+        },
+        {
+          "name" : "HBASE_MASTER"
+        },
+        {
+          "name" : "OOZIE_SERVER"
+        },
+        {
+          "name" : "SQOOP"
+        },
+        {
+          "name" : "FALCON_SERVER"
+        },
+        {
+        "name" : "FLUME_HANDLER"
+        },
+        {
+        "name" : "KNOX_GATEWAY"
+        },
+        {
+        "name" : "SLIDER"
+        },
+        {
+        "name" : "KAFKA_BROKER"
+        }
+      ],
+      "cardinality" : "1"
+    },
+    {
+      "name" : "node1",
+      "components" : [
+        {
+          "name" : "DATANODE"
+        },
+	{
+          "name" : "SECONDARY_NAMENODE"
+        },
+        {% if counter.stdout=='2' %}
+        {
+          "name" : "RESOURCEMANAGER"
+        },
+        {% endif %}
+        {
+          "name" : "NODEMANAGER"
+        },
+        {
+          "name" : "HBASE_REGIONSERVER"
+        },
+        {
+          "name" : "HDFS_CLIENT"
+        },
+        {
+          "name" : "YARN_CLIENT"
+        },
+        {
+          "name" : "ZOOKEEPER_CLIENT"
+        },
+        {
+          "name" : "PIG"
+        },
+	{
+          "name" : "TEZ_CLIENT"
+        },
+	{
+          "name" : "SPARK_CLIENT"
+        },
+        {
+          "name" : "HIVE_CLIENT"
+        },
+        {
+          "name" : "HCAT"
+        },
+        {
+          "name" : "HIVE_METASTORE"
+        },
+        {
+          "name" : "HIVE_SERVER"
+        },
+        {
+          "name" : "WEBHCAT_SERVER"
+        },
+	{
+         "name" : "HBASE_CLIENT"
+        },
+	{
+          "name" : "OOZIE_CLIENT"
+        },
+        {
+          "name" : "FALCON_CLIENT"
+        }
+      ],
+      "cardinality" : "1+"
+    }
+  ],
+  "Blueprints" : {
+    "blueprint_name" : "blueprint",
+    "stack_name" : "HDP",
+    "stack_version" : "{{ HDP_VER }}"
+  }
+}

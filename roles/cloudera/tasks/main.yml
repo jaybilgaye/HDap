@@ -1,0 +1,16 @@
+---
+#############################################################################################
+# This playbook will install cloudera. The high level flow of the playbook is as follow:    #
+# a. It will configure the repository of cloudera and add security rules in the underlying  #
+#    firewall system                                                                        #    
+# b. It will install and start the cloudera-manager                                         #
+# c. It will use cloudera api v10 for installing and configuring cloudera-agent as well as  #
+#    all the cloudera services over the cluster according to the define parameters in host  #
+#    file and group_vars directory.                                                         #    
+#############################################################################################
+
+- include_vars: group_vars/passwords.yml
+
+- include: prep.yml
+- include: install.yml
+- include: configure.yml

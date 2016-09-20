@@ -1,0 +1,104 @@
+---
+###########################################
+# Stops firewall for installing services  #
+# Verification of the HA hosts variable   #
+###########################################
+
+   - name: Stop iptables
+     command: service iptables stop
+     when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version == '6'"
+
+   - name: Stop iptables6
+     command: service ip6tables stop
+     when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version == '6'"
+
+   - name: Stop firewalld
+     command: service firewalld stop
+     when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7'"
+
+   - name: Stop firewall in Debian
+     service: name=ufw state=stopped
+     when: "ansible_os_family == 'Debian'"
+
+   - name: Create destination directory to copy templates if it dosent exist
+     file: path={{ tmp_bi_files }} state=directory mode=0755
+
+   - name: deleting hosts file
+     file: path={{ tmp_bi_files }}hadoop_hosts state=absent
+
+   - name: creating hosts file
+     file: path={{ tmp_bi_files }}hadoop_hosts state=touch
+
+   - name: Test line exists namenode
+     lineinfile:
+      dest: "{{ tmp_bi_files }}hadoop_hosts"
+      regexp: '.*{{ hostvars[item].ansible_fqdn }}'
+      line: "{{ hostvars[item].ansible_fqdn }}"
+      state: present
+     with_items: "{{groups['ODP_namenode']}}"
+
+   - name: Test line exists resourcemanager
+     lineinfile:
+      dest: "{{ tmp_bi_files }}hadoop_hosts"
+      regexp: '.*{{ hostvars[item].ansible_fqdn }}'
+      line: "{{ hostvars[item].ansible_fqdn }}"
+      state: present
+     with_items: "{{groups['ODP_resourcemanager']}}"
+
+   - name: Test line exists standbynamenode
+     lineinfile:
+      dest: "{{ tmp_bi_files }}hadoop_hosts"
+      regexp: '.*{{ hostvars[item].ansible_fqdn }}'
+      line: "{{ hostvars[item].ansible_fqdn }}"
+      state: present
+     with_items: "{{groups['ODP_standbynamenode']}}"
+
+   - name: Test line exists standby resourcemanager
+     lineinfile:
+      dest: "{{ tmp_bi_files }}hadoop_hosts"
+      regexp: '.*{{ hostvars[item].ansible_fqdn }}'
+      line: "{{ hostvars[item].ansible_fqdn }}"
+      state: present
+     with_items: "{{groups['ODP_standbyresourcemanager']}}"
+
+   - name: Register counter
+     shell: grep -c "[^ ]" {{ tmp_bi_files }}hadoop_hosts
+     register: counter
+     ignore_errors: true
+
+   - name: Test line exists all
+     lineinfile:
+      dest: "{{ tmp_bi_files }}hadoop_hosts"
+      regexp: '.*{{ hostvars[item].ansible_fqdn }}'
+      line: "{{ hostvars[item].ansible_fqdn }}"
+      state: present
+     with_items: "{{groups['ODP_hadoop']}}"
+
+   - name: Register no. of nodes
+     shell: grep -c "[^ ]" {{ tmp_bi_files }}hadoop_hosts
+     register: no_of_nodes
+
+   - name: Setting number of nodes
+     set_fact:
+       NUM_NODES: "{{ no_of_nodes.stdout }}"
+
+   - name: deleting hadoop_hosts file
+     file: path={{ tmp_bi_files }}test_hadoop state=absent
+
+   - name: creating hadoop_hosts file
+     file: path={{ tmp_bi_files }}test_hadoop state=touch
+
+   - include: host_mapping_counter1.yml
+     when: counter.stdout<='1'
+
+   - include: host_mapping_counter2.yml
+     when: counter.stdout=='2'
+
+   - include: host_mapping_counter3.yml
+     when: counter.stdout=='3'
+
+   - include: host_mapping_counter4.yml
+     when: counter.stdout=='4'
+
+
+

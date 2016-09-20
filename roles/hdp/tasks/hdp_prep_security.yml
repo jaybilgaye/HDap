@@ -1,0 +1,27 @@
+---
+###############################
+# Setting up firewall rules   #
+###############################
+- name: Setting up firewall rules for internal ports for localhost
+  security: portlist="0:65535" destlist="127.0.0.1" policy=all
+  when: ansible_distribution_major_version != '7'
+
+- name: Setting up firewall rules for internal ports for localhost
+  security: portlist="0:65535" destlist="{{ item }}" policy=all
+  when: ansible_distribution_major_version != '7'
+  with_items: "{{groups['ODP_hadoop']}}"
+
+- name: Start firewalld
+  service: name=firewalld state=started
+  when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7'" 
+
+- name: Setting up firewall rules
+  security: portlist="{{ports}}"  policy=all 
+
+- name: Setting up firewall rules
+  security: portlist="{{ hdp_ports }}"   policy=all
+  notify:
+    - Restart iptables
+    - Restart firewalld
+    - Restart iptables-ubuntu
+

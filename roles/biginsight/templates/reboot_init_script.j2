@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# chkconfig: 345 95 20
+# Required-Start: ambari-server
+# Required-Start: ambari-agent
+# description: hadoop all component start script
+# processname: ambari_hadoop
+
+export PASSWORD={{ambari_pass}}
+export CLUSTER_NAME={{CLUSTER}}
+export IP={{hostvars[groups["ambari-server"][0]].ansible_fqdn}}
+
+check_file()
+{
+status=`ssh $IP [[ -f /var/run/ambari-server/ambari-server.pid ]]`
+if [ $? -eq 0 ]; then call; else wait;  fi
+}
+
+call()
+{
+sleep 10
+curl -u admin:$PASSWORD -i -H 'X-Requested-By: ambari' -X PUT -d '{"RequestInfo": {"context" :"Start ZOOKEEPER via REST"}, "Body": {"ServiceInfo": {"state": "STARTED"}}}' http://$IP:8080/api/v1/clusters/$CLUSTER_NAME/services/ZOOKEEPER
+curl -u admin:$PASSWORD -i -H 'X-Requested-By: ambari' -X PUT -d '{"RequestInfo": {"context" :"Start HDFS via REST"}, "Body": {"ServiceInfo": {"state": "STARTED"}}}' http://$IP:8080/api/v1/clusters/$CLUSTER_NAME/services/HDFS
+curl -u admin:$PASSWORD -i -H 'X-Requested-By: ambari' -X PUT -d '{"RequestInfo": {"context" :"Start HBASE via REST"}, "Body": {"ServiceInf": {"state": "STARTED"}}}' http://$IP:8080/api/v1/clusters/$CLUSTER_NAME/services/HBASE
+curl -u admin:$PASSWORD -i -H 'X-Requested-By: ambari' -X PUT -d '{"RequestInfo": {"context" :"Start MAPREDUCE2 via REST"}, "Body": {"ServiceInfo": {"state": "STARTED"}}}' http://$IP:8080/api/v1/clusters/$CLUSTER_NAME/services/MAPREDUCE2
+curl -u admin:$PASSWORD -i -H 'X-Requested-By: ambari' -X PUT -d '{"RequestInfo": {"context" :"Start YARN via REST"}, "Body": {"ServiceInfo": {"state": "STARTED"}}}' http://$IP:8080/api/v1/clusters/$CLUSTER_NAME/services/YARN
+curl -u admin:$PASSWORD -i -H 'X-Requested-By: ambari' -X PUT -d '{"RequestInfo": {"context" :"Start HIVE via REST"}, "Body": {"ServiceInfo": {"state": "STARTED"}}}' http://$IP:8080/api/v1/clusters/$CLUSTER_NAME/services/HIVE
+curl -u admin:$PASSWORD -i -H 'X-Requested-By: ambari' -X PUT -d '{"RequestInfo": {"context" :"Start SPARK via REST"}, "Body": {"ServiceInf": {"state": "STARTED"}}}' http://$IP:8080/api/v1/clusters/$CLUSTER_NAME/services/SPARK
+}
+
+wait()
+{
+echo sleeping for 10 sec as ambari-server is not started
+sleep 10
+check_file
+}
+
+case "$1" in
+  start)
+        call
+        ;;
+  *)
+        echo "Usage: $0 {start}"
+        exit 1
+esac
+
+exit 0
+

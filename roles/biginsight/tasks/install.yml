@@ -1,0 +1,6 @@
+---
+############################
+# Installing ambari-server #
+############################
+ - name: Install Ambari server
+   package: name=ambari-server state=present

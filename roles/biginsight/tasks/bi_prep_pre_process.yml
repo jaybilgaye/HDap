@@ -1,0 +1,42 @@
+---
+##################################################################################
+# Stops firewall for installing services and removes mariadb for Redhat 7 family #
+##################################################################################
+
+  - name: Stop iptables
+    command: service iptables stop
+    when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version == '6'"
+
+  - name: Stop iptables6
+    command: service ip6tables stop
+    when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version == '6'"
+
+  - name: Stop firewalld
+    command: service firewalld stop
+    when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7'"
+
+  - name: Stop firewall in Debian
+    service: name=ufw state=stopped
+    when: "ansible_os_family == 'Debian'"
+
+  - name: Copy reboot init script to all agents
+    template: src=reboot_init_script.j2 dest=/etc/init.d/ambari_hadoop owner=root mode=755
+
+  - name: registering ambari_hadoop script on boot
+    shell: chkconfig ambari_hadoop on
+    when: "ansible_os_family == 'RedHat'"
+
+  - name: registering ambari_hadoop script on boot
+    shell: update-rc.d ambari_hadoop enable
+    when: "ansible_os_family == 'Debian'"
+
+  - name: Remove mariadb-devel and libs from Redhat 7 for fixing hive issue 
+    package: name={{item}} state=absent
+    with_items:
+           - mariadb-devel
+           - mariadb-libs
+    when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7'"
+
+  - name: Create Log Directory
+    file: path={{ LOG_DIR }} state=directory
+

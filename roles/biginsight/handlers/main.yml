@@ -1,0 +1,16 @@
+---
+##################################
+# Restarting firewall / iptables #
+##################################
+- name: Restart iptables
+  service: name=iptables state=restarted
+  when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version == '6'"
+
+- name: Restart firewalld
+  service: name=firewalld state=restarted
+  when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7'"
+
+- name: Restart iptables-ubuntu
+  shell: iptables-restore  /etc/iptables/rules.v4
+  when: "ansible_os_family == 'Debian'"
+

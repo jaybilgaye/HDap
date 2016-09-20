@@ -1,0 +1,9 @@
+---
+###########################################
+# Ambari-server installation preparation  #
+###########################################
+
+ - include : pre_process.yml
+ - include : host_mapping.yml
+ - include : ssh-keygen.yml
+ - include : repos.yml

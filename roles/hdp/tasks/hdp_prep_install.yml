@@ -1,0 +1,8 @@
+--- 
+############################
+# Installing ambari-agent  #
+############################
+  - name: Install Ambari Agent
+    package: name=ambari-agent state=present
+    notify: Restart AmbariAgent
+

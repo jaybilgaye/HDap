@@ -1,0 +1,13 @@
+---
+###################################################
+# Adding local repositories for Hdp and Hdp-utils #
+###################################################
+- name: add HDP repo 
+  template: src=repo-hdp.j2 dest={{tmp_hdp_files}}hdp23.json owner={{ANSIBLE_USER}} group={{ANSIBLE_USER}}
+  when: "DOMAIN == 'local'"
+
+- name: add HDP util 
+  template: src=repo-hdp-utils.j2 dest={{tmp_hdp_files}}hdputil.json owner={{ANSIBLE_USER}} group={{ANSIBLE_USER}}
+  when: "DOMAIN == 'local'"
+
+

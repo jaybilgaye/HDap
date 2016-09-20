@@ -1,0 +1,15 @@
+---
+###################################################
+# Adding local repositories for BI and BI-utils #
+###################################################
+- name: add BI repo 
+  template: src=repo-bi.j2 dest={{tmp_bi_files}}bi23.json owner={{ANSIBLE_USER}} group={{ANSIBLE_USER}}
+  when: "DOMAIN == 'local'"
+
+
+- name: add BI util repo
+  template: src=repo-bi-utils.j2 dest={{tmp_bi_files}}biutil.json owner={{ANSIBLE_USER}} group={{ANSIBLE_USER}}
+  when: "DOMAIN == 'local'"
+
+
+

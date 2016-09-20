@@ -1,0 +1,88 @@
+usage()
+{
+cat <<EOF
+
+usage :$0 options
+
+options:
+
+	-h	show help
+	-f 	file name containing line separated IPs
+
+NOTE:
+1) Before running this script add "StrictHostKeyChecking no" to file /etc/ssh/ssh_config on the host VM ( from where you want sshless login )
+2) Dont forget to change password which is hardcoded in this  script
+	
+	
+EOF
+}
+
+#sudo sed -i 's/requiretty/!requiretty/' /etc/sudoers
+
+
+#if [ $? != 0 ]
+#	then
+#	echo "The running user is not having sudo access. So exiting the passwordless script"
+#	exit
+#fi
+
+# changing /etc/ssh/ssh_config property
+sudo sed -i 's/.*Strict.*/   StrictHostKeyChecking no/' /etc/ssh/ssh_config
+
+PASSWORD=$3
+
+pwdlessssh()
+{
+#Generating key
+
+echo "Generating key."
+echo -ne "\n\n\n\n" | ssh-keygen -P ""
+echo -e "Key generated successfully. \n\n"
+echo "#############################"
+
+
+#trim extra spaces and empty lines
+
+sed -i '/^[[:space:]]*$/d;s/[[:space:]]*$//;s/^[[:space:]]*//' $FILENAME
+
+#distributing keys to other nodes
+
+
+
+while read IP
+do
+	echo -e "\n**********************************"
+	echo "Generating passwordless ssh with $IP"
+	sshpass -p $PASSWORD ssh-copy-id -i ~/.ssh/id_rsa.pub $IP < /dev/null
+	echo -ne "\n Now you can enjoy ssh-less log in with $IP \n"
+done < $FILENAME
+}
+
+while getopts ":f:h" OPTION
+do 
+	case $OPTION in 
+		h)
+		usage
+		exit 1
+		;;
+		
+		
+		f)
+		FILENAME=$2
+		pwdlessssh
+		;;
+		
+		\?)
+		usage
+		exist 1
+		;;
+		
+		
+		:)
+		echo -e "Option -$OPTARG requires an argument. \n See help for more details"  >&2
+		exit 1
+		
+	esac
+done
+
+

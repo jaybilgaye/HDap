@@ -1,0 +1,62 @@
+---
+###############################################################################
+# Configuring preprequisite of hadoop on all hosts, i.e. host file for local  #
+# DNS, disabling selinux, configuring ntp                                     #  
+###############################################################################
+
+
+ - name: Build hosts file
+   lineinfile: dest=/etc/hosts regexp='.*{{ item }}$' line="{{ hostvars[item].ansible_default_ipv4.address }} {{ hostvars[item].ansible_fqdn }}" state=present
+   when: hostvars[item].ansible_default_ipv4.address is defined
+   with_items: "{{groups['all']}}"
+
+
+ - name: Get selinux into register
+   shell: getenforce
+   register: selinux_contents
+   when: ansible_os_family == 'RedHat'
+
+ - name: Set enforce
+   shell: setenforce 0
+   ignore_errors: yes
+   when: "ansible_os_family == 'RedHat' and selinux_contents.stdout.find('Disabled') == -1"
+
+ - name: Selinux configuration
+   selinux: state=disabled
+   when: "ansible_os_family == 'RedHat' and selinux_contents.stdout.find('Disabled') == -1"
+
+ - name: Install ntp 
+   package: name=ntp state=present
+   
+ - name: Add NTP Server
+   lineinfile: dest=/etc/ntp.conf
+              regexp='^server'
+              insertbefore='^server'
+              line='server {{NTP_SERVER}}'
+              state=present
+              backrefs=yes
+   when: DOMAIN == 'local'
+
+ - name: Sync machine with server
+   shell: ntpdate -d {{NTP_SERVER}}; ntpdate -d {{NTP_SERVER}}
+   ignore_errors: yes
+   when: DOMAIN == 'local'
+
+
+ - name: Sync machine with server
+   shell: ntpdate -d 0.centos.pool.ntp.org; ntpdate -d 0.ubuntu.pool.ntp.org
+   ignore_errors: yes
+   when: DOMAIN != 'local'
+
+
+ - name: Ensure ntp is started and enabled
+   service: name=ntpd state=started enabled=yes
+   when: ansible_os_family == 'RedHat' 
+
+
+ - name: Ensure ntp is started and enabled
+   service: name=ntp state=started enabled=yes
+   when: ansible_os_family == 'Debian'   
+
+
+

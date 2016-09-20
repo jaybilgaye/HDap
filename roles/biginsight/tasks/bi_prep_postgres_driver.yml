@@ -1,0 +1,13 @@
+---
+######################################################
+# Installing postgresql drivers for Redhat 7 family  #
+######################################################
+
+ - name: Install postgresql-jdbc for hive
+   package: name={{item}} state=present
+   with_items:
+       - postgresql-jdbc
+
+ - name: Install Postgresql (Only for Redhat 7 family)
+   package: name=postgresql-jdbc-javadoc state=present
+   when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7'"

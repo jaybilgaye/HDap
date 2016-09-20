@@ -1,0 +1,20 @@
+---
+################################################################
+# Installing basic required packages to run ansible and hadoop #
+################################################################
+- name: Install prerequisite packages
+  package:
+    name: "{{item}}"
+    state: latest
+  with_items:
+    - java
+    - openssh-clients
+    - curl
+  when: ansible_os_family == 'RedHat'   
+
+
+- name: Install prerequisite packages
+  package:
+    name: default-jdk
+    state: latest
+  when: ansible_os_family == 'Debian'

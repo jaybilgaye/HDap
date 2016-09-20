@@ -1,0 +1,11 @@
+---
+################################################
+# Registering ambari-server with ambari-agent  #
+################################################
+
+ - name: Configure Ambari agent to register at Ambari server
+   lineinfile: dest=/etc/ambari-agent/conf/ambari-agent.ini create=no state=present regexp='hostname.*' line='hostname={{hostvars[groups["ambari-server"][0]].ansible_fqdn}}'
+
+ - name: Restart AmbariAgent
+   service: name=ambari-agent state=restarted enabled=yes
+

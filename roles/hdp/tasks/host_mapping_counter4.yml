@@ -1,0 +1,38 @@
+---
+######################################################
+# Preparation of blueprint as per user defined hosts #
+######################################################
+
+   - name: Test line exists namenode
+     lineinfile:
+      dest: "{{ tmp_hdp_files }}test_hadoop"
+      regexp: '.*{{ hostvars[item].ansible_fqdn }}'
+      line: "{{ hostvars[item].ansible_fqdn }}"
+      state: present
+     with_items: "{{groups['ODP_namenode']}}"
+
+
+   - name: Test line exists resourcemanager
+     lineinfile:
+      dest: "{{ tmp_hdp_files }}test_hadoop"
+      regexp: '.*{{ hostvars[item].ansible_fqdn }}'
+      line: "{{ hostvars[item].ansible_fqdn }}"
+      state: present
+     with_items: "{{groups['ODP_resourcemanager']}}"
+
+   - name: Test line exists standbynamenode
+     lineinfile:
+      dest: "{{ tmp_hdp_files }}test_hadoop"
+      regexp: '.*{{ hostvars[item].ansible_fqdn }}'
+      line: "{{ hostvars[item].ansible_fqdn }}"
+      state: present
+     with_items: "{{groups['ODP_standbynamenode']}}"
+
+   - name: Test line exists standby resourcemanager
+     lineinfile:
+      dest: "{{ tmp_hdp_files }}test_hadoop"
+      regexp: '.*{{ hostvars[item].ansible_fqdn }}'
+      line: "{{ hostvars[item].ansible_fqdn }}"
+      state: present
+     with_items: "{{groups['ODP_standbyresourcemanager']}}"
+

@@ -1,0 +1,59 @@
+---
+
+- name: Gathering facts
+  hosts: all
+  gather_facts: yes
+  user: "{{ANSIBLE_USER}}"
+  become: yes
+  become_method: sudo
+
+
+- name: Pre_requisites
+  hosts: all
+  user: "{{ANSIBLE_USER}}"
+  become: yes
+  become_method: sudo
+  roles:
+  - pre_requisites
+
+
+- name: Installation of Cloudera
+  hosts: cloudera_master
+  user: "{{ANSIBLE_USER}}"
+  become: yes
+  become_method: sudo
+  roles:
+  - { role: cloudera, when: FLAVOUR == 'cdh'}
+
+
+- name: Installation of BigInsights
+  hosts: ODP_hadoop
+  become: yes
+  become_method: sudo
+  user: "{{ANSIBLE_USER}}"
+  roles:
+  - { role: biginsight, when: FLAVOUR == 'bi'}
+
+
+
+- name: Installation of HDP
+  hosts: ODP_hadoop
+  become: yes
+  become_method: sudo
+  user: "{{ANSIBLE_USER}}"
+  roles:
+  - { role: hdp, when: FLAVOUR == 'hdp'}
+
+
+- name: Msg for HDP or Biginsights
+  hosts: ambari-server
+  tasks:
+   - debug: msg="Watch installation progress at '{{groups['ambari-server'][0]}}:8080'. Login with Username - admin and Password - admin"
+     when: FLAVOUR != 'cdh' 
+
+- name: Msg for Cloudera
+  hosts: cloudera_master
+  tasks:
+   - debug: msg="Watch Cloudera installation progress at '{{groups['cloudera_master'][0]}}:7180'. Login with Username - admin and Password - admin"
+     when: FLAVOUR == 'cdh'
+

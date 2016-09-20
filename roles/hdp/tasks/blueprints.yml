@@ -1,0 +1,161 @@
+---
+###########################################################################
+# It uploads blueprint and creates cluster according to number of nodes.  #
+###########################################################################
+- name: cat hadoop_host file
+  shell: cat /opt/hdp/hadoop_hosts
+  register: hostsIP
+
+- name: Upload Blueprint For Single Node Cluster
+  template: src=blueprint_singlenode_7_c1.j2 dest={{ tmp_hdp_files }}blueprint.json mode=0777
+  when: "NUM_NODES == '1' and ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7'"
+
+- name: Upload Blueprint For Single Node Cluster
+  template: src=blueprint_singlenode_6_c1.j2 dest={{ tmp_hdp_files }}blueprint.json mode=0777
+  when: "NUM_NODES == '1' and ansible_distribution_major_version != '7'"
+
+- name: Upload Blueprint For Two Node Cluster 
+  template: src=blueprint_twonode_7_c1.j2 dest={{ tmp_hdp_files }}blueprint.json mode=0777
+  when: "NUM_NODES == '2' and ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7'"
+
+- name: Upload Blueprint For Two Node Cluster 
+  template: src=blueprint_twonode_6_c1.j2 dest={{ tmp_hdp_files }}blueprint.json mode=0777
+  when: "NUM_NODES == '2' and ansible_distribution_major_version != '7'"
+
+- name: Upload Blueprint For Three Node Cluster and counter 1
+  template: src=blueprint_three_node_cluster_7_c1.j2 dest={{ tmp_hdp_files }}blueprint.json mode=0644
+  when: "NUM_NODES == '3' and ansible_os_family == 'RedHat'and ansible_distribution_major_version == '7' and counter.stdout <= '1'"
+
+- name: Upload Blueprint For Three Node Cluster and counter 1
+  template: src=blueprint_three_node_cluster_6_c1.j2 dest={{ tmp_hdp_files }}blueprint.json mode=0644
+  when: "NUM_NODES == '3' and ansible_distribution_major_version != '7' and counter.stdout <= '1'"
+
+- name: Upload Blueprint For Three Node Cluster and counter 2
+  template: src=blueprint_three_node_cluster_7_c2.j2 dest={{ tmp_hdp_files }}blueprint.json mode=0644
+  when: "NUM_NODES == '3' and ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7' and counter.stdout == '2'"
+
+- name: Upload Blueprint For Three Node Cluster and counter 2
+  template: src=blueprint_three_node_cluster_6_c2.j2 dest={{ tmp_hdp_files }}blueprint.json mode=0644
+  when: "NUM_NODES == '3' and ansible_distribution_major_version != '7' and counter.stdout == '2'"
+
+- name: Upload Blueprint For Three Node Cluster and counter 3
+  template: src=blueprint_three_node_cluster_7_c3.j2 dest={{ tmp_hdp_files }}blueprint.json mode=0644
+  when: "NUM_NODES == '3' and ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7' and counter.stdout == '3'"
+
+- name: Upload Blueprint For Three Node Cluster and counter 3
+  template: src=blueprint_three_node_cluster_6_c3.j2 dest={{ tmp_hdp_files }}blueprint.json mode=0644
+  when: "NUM_NODES == '3' and ansible_distribution_major_version != '7' and counter.stdout == '3'"
+
+- name: Upload Blueprint For Four Node Cluster and counter 1
+  template: src=blueprint_four_node_cluster_7_c1.j2 dest={{ tmp_hdp_files }}blueprint.json mode=0644
+  when: "NUM_NODES == '4' and ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7' and counter.stdout == '1'"
+
+- name: Upload Blueprint For Four Node Cluster and counter 1
+  template: src=blueprint_four_node_cluster_6_c1.j2 dest={{ tmp_hdp_files }}blueprint.json mode=0644
+  when: "NUM_NODES == '4' and ansible_distribution_major_version != '7' and counter.stdout == '1'"
+
+- name: Upload Blueprint For Four Node Cluster and counter 2
+  template: src=blueprint_four_node_cluster_7_c2.j2 dest={{ tmp_hdp_files }}blueprint.json mode=0644
+  when: "NUM_NODES == '4' and ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7' and counter.stdout == '2'"
+
+- name: Upload Blueprint For Four Node Cluster and counter 2
+  template: src=blueprint_four_node_cluster_6_c2.j2 dest={{ tmp_hdp_files }}blueprint.json mode=0644
+  when: "NUM_NODES == '4' and ansible_distribution_major_version != '7' and counter.stdout == '2'"
+
+- name: Upload Blueprint For Four Node Cluster and counter 3
+  template: src=blueprint_four_node_cluster_7_c3.j2 dest={{ tmp_hdp_files }}blueprint.json mode=0644
+  when: "NUM_NODES == '4' and ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7' and counter.stdout == '3'"
+
+- name: Upload Blueprint For Four Node Cluster and counter 3
+  template: src=blueprint_four_node_cluster_6_c3.j2 dest={{ tmp_hdp_files }}blueprint.json mode=0644
+  when: "NUM_NODES == '4' and ansible_distribution_major_version != '7' and counter.stdout == '3'"
+
+- name: Upload Blueprint For Four Node Cluster and counter 4
+  template: src=blueprint_four_node_cluster_7_c4.j2 dest={{ tmp_hdp_files }}blueprint.json mode=0644
+  when: "NUM_NODES == '4' and ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7' and counter.stdout == '4'"
+
+- name: Upload Blueprint For Four Node Cluster and counter 4
+  template: src=blueprint_four_node_cluster_6_c4.j2 dest={{ tmp_hdp_files }}blueprint.json mode=0644
+  when: "NUM_NODES == '4' and ansible_distribution_major_version != '7' and counter.stdout == '4'"
+
+- name: Upload Blueprint For More than Four Node Cluster and counter 1
+  template: src=blueprint_five_and_more_node_cluster_7_c1.j2 dest={{ tmp_hdp_files }}blueprint.json mode=0644
+  when: "NUM_NODES > '4' and ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7' and counter.stdout == '1'"
+
+- name: Upload Blueprint For More Than Four Node Cluster and counter 1
+  template: src=blueprint_five_and_more_node_cluster_6_c1.j2 dest={{ tmp_hdp_files }}blueprint.json mode=0644
+  when: "NUM_NODES > '4' and ansible_distribution_major_version != '7' and counter.stdout == '1'"
+
+- name: Upload Blueprint For More than Four Node Cluster and counter 2
+  template: src=blueprint_five_and_more_node_cluster_7_c2.j2 dest={{ tmp_hdp_files }}blueprint.json mode=0644
+  when: "NUM_NODES > '4' and ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7' and counter.stdout == '2'"
+
+- name: Upload Blueprint For More Than Four Node Cluster and counter 2
+  template: src=blueprint_five_and_more_node_cluster_6_c2.j2 dest={{ tmp_hdp_files }}blueprint.json mode=0644
+  when: "NUM_NODES > '4' and ansible_distribution_major_version != '7' and counter.stdout == '2'"
+
+- name: Upload Blueprint For More than Four Node Cluster and counter 3
+  template: src=blueprint_five_and_more_node_cluster_7_c3.j2 dest={{ tmp_hdp_files }}blueprint.json mode=0644
+  when: "NUM_NODES > '4' and ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7' and counter.stdout == '3'"
+
+- name: Upload Blueprint For More Than Four Node Cluster and counter 3
+  template: src=blueprint_five_and_more_node_cluster_6_c3.j2 dest={{ tmp_hdp_files }}blueprint.json mode=0644
+  when: "NUM_NODES > '4' and ansible_distribution_major_version != '7' and counter.stdout == '3'"
+
+- name: Upload Blueprint For More than Four Node Cluster and counter 4
+  template: src=blueprint_five_and_more_node_cluster_7_c4.j2 dest={{ tmp_hdp_files }}blueprint.json mode=0644
+  when: "NUM_NODES > '4' and ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7' and counter.stdout == '4'"
+
+- name: Upload Blueprint For More Than Four Node Cluster and counter 4
+  template: src=blueprint_five_and_more_node_cluster_6_c4.j2 dest={{ tmp_hdp_files }}blueprint.json mode=0644
+  when: "NUM_NODES > '4' and ansible_distribution_major_version != '7' and counter.stdout == '4'"
+
+- name: Changing Permissions for blueprint
+  file: path={{tmp_hdp_files}}blueprint.json state=touch owner={{ANSIBLE_USER}} group={{ANSIBLE_USER}} mode=0777
+
+- name: Waiting for ambari-server to start listening on port 8080
+  wait_for: host={{hostvars[groups["ambari-server"][0]].ansible_fqdn}} port=8080
+
+- name: Post blueprint
+  shell: 'curl -H "X-Requested-By: ambari" -X  POST -u admin:{{ ambari_pass }} http://{{hostvars[groups["ambari-server"][0]].ansible_fqdn}}:8080/api/v1/blueprints/blueprint -d @{{ tmp_hdp_files }}blueprint.json'
+  become: true
+  become_user: "{{ANSIBLE_USER}}"
+
+- name: HDP Repo blueprint for RedHat
+  shell: 'curl -H "X-Requested-By: ambari" -u admin:{{ ambari_pass }} http://{{hostvars[groups["ambari-server"][0]].ansible_fqdn}}:8080/api/v1/stacks/HDP/versions/{{ HDP_VER }}/operating_systems/redhat{{ ansible_distribution_major_version }}/repositories/HDP-{{ HDP_VER }} -T {{ tmp_hdp_files }}hdp23.json'
+  become: true
+  become_user: "{{ANSIBLE_USER}}"
+  when: "ansible_os_family == 'RedHat' and DOMAIN == 'local'"
+
+
+- name: HDP UTILS Repo blueprint for RedHat
+  shell: 'curl -H "X-Requested-By: ambari" -u admin:{{ ambari_pass }} http://{{hostvars[groups["ambari-server"][0]].ansible_fqdn}}:8080/api/v1/stacks/HDP/versions/{{ HDP_VER }}/operating_systems/redhat{{ ansible_distribution_major_version }}/repositories/HDP-UTILS-{{ HDP_UTILS_VER}} -T {{ tmp_hdp_files }}hdputil.json'
+  become: true
+  become_user: "{{ANSIBLE_USER}}"
+  when: "ansible_os_family == 'RedHat' and DOMAIN == 'local'"
+
+- name: HDP Repo blueprint for Ubuntu
+  shell: 'curl -H "X-Requested-By: ambari" -u admin:{{ ambari_pass }} http://{{hostvars[groups["ambari-server"][0]].ansible_fqdn}}:8080/api/v1/stacks/HDP/versions/{{ HDP_VER }}/operating_systems/ubuntu{{ ansible_distribution_major_version }}/repositories/HDP-{{ HDP_VER }} -T {{ tmp_hdp_files }}hdp23.json'
+  become: true
+  become_user: "{{ANSIBLE_USER}}"
+  when: "ansible_os_family == 'Debian' and DOMAIN == 'local'"
+
+
+- name: HDP UTILS Repo blueprint for Ubuntu
+  shell: 'curl -H "X-Requested-By: ambari" -u admin:{{ ambari_pass }} http://{{hostvars[groups["ambari-server"][0]].ansible_fqdn}}:8080/api/v1/stacks/HDP/versions/{{ HDP_VER }}/operating_systems/ubuntu{{ ansible_distribution_major_version }}/repositories/HDP-UTILS-{{ HDP_UTILS_VER}} -T {{ tmp_hdp_files }}hdputil.json'
+  become: true
+  become_user: "{{ANSIBLE_USER}}"
+  when: "ansible_os_family == 'Debian' and DOMAIN == 'local'"
+
+- name: Create cluster
+  shell: 'curl -H "X-Requested-By: ambari" -X POST -u admin:{{ ambari_pass }} http://{{hostvars[groups["ambari-server"][0]].ansible_fqdn}}:8080/api/v1/clusters/{{ CLUSTER }} -d @{{ tmp_hdp_files }}host_service.json'
+  become: true
+  become_user: "{{ANSIBLE_USER}}"
+
+- name: Pause of 30 seconds
+  pause: seconds=30
+
+- name: deleting temp files
+  file: dest={{ tmp_hdp_files }}  state=absent
+
+

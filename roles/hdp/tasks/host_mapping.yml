@@ -1,0 +1,33 @@
+---
+#####################################################
+# Creating host_service.json structure for cluster  #
+#####################################################
+   - include_vars: group_vars/all
+   
+   - name: deleting /opt/hdp/hadoop_hosts
+     file: dest=/opt/hdp/hadoop_hosts  state=absent
+
+   - name: copy test_hadoop to hadoop_hosts
+     copy: src={{ tmp_hdp_files }}test_hadoop dest=/opt/hdp/hadoop_hosts remote_src=True
+
+   - name: create a new file with lineinfile
+     lineinfile:
+      dest: /opt/hdp/hadoop_hosts
+      regexp: '.*{{ hostvars[item].ansible_fqdn }}'
+      line: "{{ hostvars[item].ansible_fqdn }}"
+      state: present
+     with_items: groups['ODP_hadoop']
+
+   - name: Register no. of nodes
+     shell: grep -c "[^ ]" /opt/hdp/hadoop_hosts
+     register: no_of_nodes
+
+   - name: copy host_service.json file at ambari-server node in tmp directory
+     template: src='host_service.json' dest={{ tmp_hdp_files }}
+
+   - name: copy python file at ambari-server node in tmp directory
+     template: src='json_host_structure.py' dest={{ tmp_hdp_files }}
+
+   - name: calling python file at ambari-server for host_service.json creation
+     shell: python {{ tmp_hdp_files }}json_host_structure.py
+

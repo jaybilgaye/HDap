@@ -1,0 +1,2 @@
+{% for host in groups['hadoop_hosts'] %}"{{ host }}"{% if not loop.last %},{% endif %}{% endfor %}
+

@@ -1,0 +1,56 @@
+---
+######################################################
+# Preparation of blueprint as per user defined hosts #
+######################################################
+
+   - name: Test line exists standbynamenode
+     lineinfile:
+      dest: "{{ tmp_bi_files }}test_hadoop"
+      regexp: '.*{{ hostvars[item].ansible_fqdn }}'
+      line: "{{ hostvars[item].ansible_fqdn }}"
+      state: present
+     with_items: "{{groups['ODP_standbynamenode']}}"
+     when: "{{ groups['ODP_namenode'] | length}} != 0 and {{ groups['ODP_resourcemanager'] | length}} != 0 and {{no_of_nodes.stdout}}>2 and {{HA_RESOURCE_MANAGER}}==false and groups['ODP_resourcemanager'][0]==groups['ODP_namenode'][0]"
+
+   - name: Test line exists standbynamenode
+     lineinfile:
+      dest: "{{ tmp_bi_files }}test_hadoop"
+      regexp:  '.*{{ hostvars[item].ansible_fqdn }}'
+      line: "{{ hostvars[item].ansible_fqdn }}"
+      state: present
+     with_items: "{{groups['ODP_standbynamenode']}}"
+     when: "{{ groups['ODP_standbynamenode'] | length}} != 0 and {{ groups['ODP_resourcemanager'] | length}} != 0 and {{no_of_nodes.stdout}}>2 and {{HA_RESOURCE_MANAGER}}==false and groups['ODP_resourcemanager'][0]!=groups['ODP_standbynamenode'][0]"
+
+   - name: Test line exists namenode
+     lineinfile:
+      dest: "{{ tmp_bi_files }}test_hadoop"
+      regexp: '.*{{ hostvars[item].ansible_fqdn }}'
+      line: "{{ hostvars[item].ansible_fqdn }}"
+      state: present
+     with_items: "{{groups['ODP_namenode']}}"
+
+
+   - name: Test line exists resourcemanager
+     lineinfile:
+      dest: "{{ tmp_bi_files }}test_hadoop"
+      regexp: '.*{{ hostvars[item].ansible_fqdn }}'
+      line: "{{ hostvars[item].ansible_fqdn }}"
+      state: present
+     with_items: "{{groups['ODP_resourcemanager']}}"
+
+   - name: Test line exists standbynamenode
+     lineinfile:
+      dest: "{{ tmp_bi_files }}test_hadoop"
+      regexp: '.*{{ hostvars[item].ansible_fqdn }}'
+      line: "{{ hostvars[item].ansible_fqdn }}"
+      state: present
+     with_items: "{{groups['ODP_standbynamenode']}}"
+
+   - name: Test line exists standby resourcemanager
+     lineinfile:
+      dest: "{{ tmp_bi_files }}test_hadoop"
+      regexp: '.*{{ hostvars[item].ansible_fqdn }}'
+      line: "{{ hostvars[item].ansible_fqdn }}"
+      state: present
+     with_items: "{{groups['ODP_standbyresourcemanager']}}"
+

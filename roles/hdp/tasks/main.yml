@@ -1,0 +1,58 @@
+---
+#############################################################################################
+#                                                                                           #
+# This will install Hortonworks cluster on the nodes. The high level flow of the            #
+# playbook will be as follow:                                                               #    
+# a. Configures Ambari repository and passwordless ssh in all nodes                         #    
+# b. Configures jdk if installation is happening using intranet                             #    
+# c. Updates the security by adding firewall / iptables rules using custom module           #    
+# d. Installs and configures amabri-agent                                                   #    
+# e. For Redhat 7 family, it will use postgresql for hive metastore                         #
+# f. Installs and configures ambari-server                                                  #     
+# g. Installs and configures hadoop services as per the selected blueprint                  #       
+#############################################################################################
+
+
+########################
+# Install Ambari-agent #
+########################
+
+ - include_vars: group_vars/passwords.yml
+ - include: hdp_prep_pre_process.yml
+
+ - name: check if jdk module executed
+   stat: path=/opt/hdp/jdkstat
+   register: jdkflag
+
+ - block:
+   - name: Create jdk file
+     include: hdp_prep_jdk.yml
+   - file: path=/opt/hdp/jdkstat state=touch
+   when: "not jdkflag.stat.exists and DOMAIN == 'local'"
+
+ - include: hdp_prep_repos.yml
+ - include: hdp_prep_security.yml
+ - include: hdp_prep_install.yml
+ - include: hdp_prep_configure.yml
+ - include: hdp_prep_postgres_driver.yml
+   when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7'"
+ - include: hdp_prep_hive_metadata.yml
+   when: "namenode_hostname == ansible_fqdn and ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7'"
+
+#############################################
+# Install Ambari-Server and Hadoop services #
+#############################################
+
+ - name: check if cluster created
+   stat: path=/opt/hdp/clusterstat
+   register: clusterflag
+
+
+ - block:
+     - include: prep.yml
+     - include: install.yml
+     - include: configure.yml
+     - include: blueprints.yml
+     - file: path=/opt/hdp/clusterstat state=touch
+     - debug: msg="Watch HDP installation progress at '{{groups['ambari-server'][0]}}:8080'. Login with Username - admin and Password - admin"
+   when: "not clusterflag.stat.exists and groups['ambari-server'][0]==ansible_default_ipv4.address"

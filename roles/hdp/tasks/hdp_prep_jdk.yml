@@ -1,0 +1,40 @@
+---
+##########################################################
+# Installing java and updating java_home / alternatives  #
+##########################################################
+    - name: Check if /usr/java/jdk is created
+      file: path=/usr/java/jdk state=directory owner=root group=root mode=0755 recurse=yes
+
+    - name: Download jdk-7u71
+      get_url: url=http://bigdata.persistent.co.in/Addon/java/jdk-7u71-linux-x64.tar.gz dest=/tmp/java.tar.gz owner=root mode=0644
+
+    - name: Extract jdk-7u71-linux-x64.tar.gz under /usr/java
+      shell: tar -xf /tmp/java.tar.gz -C /usr/java/jdk --strip-components=1
+
+    - name: Running update-alternatives to create links to /usr/bin/java
+      command: "{{ item }}"
+      with_items:
+        - update-alternatives --install "/usr/bin/java" "java" "/usr/java/jdk/bin/java" 1
+        - update-alternatives --install "/usr/bin/javac" "javac" "/usr/java/jdk/bin/javac" 1
+        - update-alternatives --install "/usr/bin/javaws" "javaws" "/usr/java/jdk/bin/javaws" 1
+
+    - name: Create /usr/java/latest
+      file: src=/usr/java/jdk dest=/usr/java/latest state=link owner=root group=root mode=777
+
+    - name: Create /usr/java/default links
+      file: src=/usr/java/latest dest=/usr/java/default state=link owner=root group=root mode=777
+
+    - name: Create directory
+      file: path=/usr/lib/jvm state=directory owner=root group=root
+      when: ansible_os_family == 'Debian'
+
+    - name: Create /usr/java/default links for Debian
+      file: src=/usr/java/latest dest=/usr/lib/jvm/default-java state=link owner=root group=root mode=777
+      when: ansible_os_family == 'Debian'
+
+    - name: Create link for libjvm.so
+      file: src=/usr/java/latest/jre/lib/amd64/server/libjvm.so dest=/lib64/libjvm.so owner=root group=root state=link
+
+    - name: Create link for /etc/alternative
+      file: src=/usr/java/latest/bin/java dest=/etc/alternatives/java owner=root group=root state=link
+

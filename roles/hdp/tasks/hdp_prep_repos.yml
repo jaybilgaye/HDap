@@ -1,0 +1,29 @@
+---
+#########################
+# Copying ambari-repos  #
+#########################
+- name: Copying ambari repos
+  template: src='ambari.j2' dest=/etc/yum.repos.d/ambari.repo
+  when: ansible_os_family == 'RedHat'
+
+- name: Copying ambari repos
+  template: src='ambari_ubuntu.j2' dest=/etc/apt/sources.list.d/ambari.list
+  when: ansible_os_family == 'Debian'  
+
+- name: Create Ambari GPG-key for ubuntu
+  get_url: dest=/etc/apt/trusted.gpg.d/ambari.gpg url={{ AMBARI_REPO }}/ambari.gpg
+  when: "ansible_os_family == 'Debian'"
+
+- name: Cleaning yum cache 
+  shell: yum clean all
+  when: ansible_os_family == 'RedHat'
+
+- name: Repolist
+  shell: yum repolist
+  when: ansible_os_family == 'RedHat'
+
+- name: update
+  shell: apt-get update
+  when: ansible_os_family == 'Debian'
+
+

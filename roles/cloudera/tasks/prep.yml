@@ -1,0 +1,467 @@
+---
+#######################################################################
+# This playbook will configure the cloudera repository and firewall.  #
+# The security of OS is managed by an external custom module which    #
+# will add the rules for firewall/iptables for all the hosts.         #
+#######################################################################
+
+- name: Preparing repo of Cloudera manager for RedHat
+  template:
+    src: cloudera-redhat.repo.j2
+    dest: /etc/yum.repos.d/cloudera.repo
+  when: ansible_os_family == 'RedHat'
+
+
+- name: Preparing repo of Cloudera manager for Debian
+  template:
+    src: cloudera-debian.list.j2
+    dest: /etc/apt/sources.list.d/cloudera.list
+  when: ansible_os_family == 'Debian'
+
+
+- name: Preparing archive.key for Debian
+  get_url: url={{DEBIAN_CM_KEY}} dest=/etc/apt/trusted.gpg.d/archive.key force=yes
+  when: ansible_os_family == 'Debian'
+
+
+- name: Adding archive.key
+  shell: apt-key add /etc/apt/trusted.gpg.d/archive.key
+  when: ansible_os_family == 'Debian'
+
+
+- name: clean all
+  shell: yum clean all
+  when: ansible_os_family == 'RedHat'
+
+- name: repolist
+  shell: yum repolist
+  when: ansible_os_family == 'RedHat'
+
+- name: update
+  shell: apt-get update
+  when: ansible_os_family == 'Debian'
+
+
+#Setting up firewall rules
+
+- name: Start firewall in RedHat 7
+  service: name=firewalld state=started
+  when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7'"
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['hadoop_hosts'] }}"
+
+
+
+- name: Start firewall in RedHat 6
+  service: name=iptables state=started
+  when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version == '6'"
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['hadoop_hosts'] }}"
+
+
+- name: Stop firewall in Debian
+  service: name=ufw state=stopped
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['hadoop_hosts'] }}"
+  when: "ansible_os_family == 'Debian'"
+
+
+
+- name: Setting up firewall rules for hdfs dn internal ports
+  security: portlist="{{ hdfs_dn_internal_ports }}" destlist="{{ hostvars[item[0]].ansible_default_ipv4.address }}" policy=all
+  delegate_to: "{{ item[1] }}"
+  with_nested:
+    - "{{ groups['datanodes'] }}"
+    - "{{ groups['datanodes'] }}"
+
+- name: Setting up firewall rules for hdfs dn external ports
+  security: portlist="{{ hdfs_dn_external_ports }}" policy=all
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['datanodes'] }}"
+
+
+- name: Setting up firewall rules for Cloudera manager internal ports
+  security: portlist="{{ cm_internal_ports }}" destlist="{{ hostvars[item[0]].ansible_default_ipv4.address }}" policy=all
+  delegate_to: "{{ item[1] }}"
+  with_nested:
+    - "{{ groups['hadoop_hosts'] }}"
+    - "{{ groups['cloudera_master'] }}"
+
+
+- name: Setting up firewall rules for Cloudera manager external ports
+  security: portlist="{{ cm_external_ports }}" policy=all
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['cloudera_master'] }}"
+
+
+- name: Setting up firewall rules for Cloudera manager agent internal ports
+  security: portlist="{{ cm_agent_internal_ports }}" destlist="{{ hostvars[item[0]].ansible_default_ipv4.address }}" policy=all  
+  delegate_to: "{{ item[1] }}"
+  with_nested:
+    - "{{ groups['hadoop_hosts'] }}"
+    - "{{ groups['hadoop_hosts'] }}"
+
+- name: Setting up firewall rules for monitoring internal ports
+  security: portlist="{{ monitoring_internal_ports }}" destlist="{{ hostvars[item[0]].ansible_default_ipv4.address }}" policy=all
+  delegate_to: "{{ item[1] }}"
+  with_nested:
+    - "{{ groups['cloudera_master'] }}"
+    - "{{ groups['cloudera_master'] }}"
+
+
+- name: Setting up firewall rules for PostgreSQL internal ports
+  security: portlist="{{ postgresql_internal_ports }}" destlist="{{ hostvars[item[0]].ansible_default_ipv4.address }}" policy=all
+  delegate_to: "{{ item[1] }}"
+  with_nested:
+    - "{{ groups['hadoop_hosts'] }}"
+    - "{{ groups['cloudera_master'] }}"
+
+
+- name: Setting up firewall rules for hive external ports
+  security: portlist="{{ hive_external_ports }}" policy=all
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['hive_nodes'] }}"
+
+
+- name: Setting up firewall rules for spark_on_yarn internal ports
+  security: portlist="{{ spark_on_yarn_internal_ports }}" destlist="{{ hostvars[item[0]].ansible_default_ipv4.address }}" policy=all
+  delegate_to: "{{ item[1] }}"
+  with_nested:
+    - "{{ groups['spark_on_yarn'] }}"
+    - "{{ groups['spark_on_yarn'] }}"
+
+
+- name: Setting up firewall rules for spark_on_yarn external ports
+  security: portlist="{{ spark_on_yarn_external_ports }}" policy=all
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['spark_on_yarn'] }}"
+
+
+- name: Setting up firewall rules for oozie internal ports
+  security: portlist="{{ oozie_internal_ports }}" destlist="{{ hostvars[item[0]].ansible_default_ipv4.address }}" policy=all
+  delegate_to: "{{ item[1] }}"
+  with_nested:
+    - "{{ groups['oozie'] }}"
+    - "{{ groups['oozie'] }}"
+
+
+- name: Setting up firewall rules for oozie external ports
+  security: portlist="{{ oozie_external_ports }}" policy=all
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['oozie'] }}"
+
+
+- name: Setting up firewall rules for hbase internal ports
+  security: portlist="{{ hbase_internal_ports }}" destlist="{{ hostvars[item[0]].ansible_default_ipv4.address }}" policy=all
+  delegate_to: "{{ item[1] }}"
+  with_nested:
+    - "{{ groups['hbase'] }}"
+    - "{{ groups['hbase'] }}"
+
+ 
+- name: Setting up firewall rules for hbase external ports
+  security: portlist="{{ hbase_external_ports }}" policy=all
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['hbase'] }}"
+  
+
+- name: Setting up firewall rules for solr internal ports
+  security: portlist="{{ solr_internal_ports }}" destlist="{{ hostvars[item[0]].ansible_default_ipv4.address }}" policy=all
+  delegate_to: "{{ item[1] }}"
+  with_nested:
+    - "{{ groups['solr'] }}"
+    - "{{ groups['solr'] }}"
+
+  
+- name: Setting up firewall rules for solr external ports
+  security: portlist="{{ solr_external_ports }}" policy=all
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['solr'] }}"
+  
+- name: Setting up firewall rules for sqoop external ports
+  security: portlist="{{ sqoop_external_ports }}" policy=all
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['sqoop'] }}"
+  
+- name: Setting up firewall rules for flume external ports
+  security: portlist="{{ flume_external_ports }}" policy=all
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['flume'] }}"
+  
+- name: Setting up firewall rules for hue external ports
+  security: portlist="{{ hue_external_ports }}" policy=all
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['hue'] }}"
+  
+- name: Setting up firewall rules for impala internal ports
+  security: portlist="{{ impalad_internal_ports }}" destlist="{{ hostvars[item[0]].ansible_default_ipv4.address }}" policy=all
+  delegate_to: "{{ item[1] }}"
+  with_nested:
+    - "{{ groups['hadoop_hosts'] }}"
+    - "{{ groups['hadoop_hosts'] }}"
+
+  
+- name: Setting up firewall rules for impala external ports
+  security: portlist="{{ impalad_external_ports }}" policy=all
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['hadoop_hosts'] }}"
+
+
+- name: Setting up firewall rules for impala internal ports
+  security: portlist="{{ impalad_internal_ports }}" destlist="{{ hostvars[item[0]].ansible_default_ipv4.address }}" policy=all
+  delegate_to: "{{ item[1] }}"
+  with_nested:
+    - "{{ groups['impala'] }}"
+    - "{{ groups['impala'] }}"
+
+  
+- name: Setting up firewall rules for sentry external ports
+  security: portlist="{{ sentry_external_ports }}" policy=all
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['sentry'] }}"
+  
+
+- name: Setting up firewall rules for kms internal ports
+  security: portlist="{{ kms_internal_ports }}" destlist="{{ hostvars[item[0]].ansible_default_ipv4.address }}" policy=all
+  delegate_to: "{{ item[1] }}"
+  with_nested:
+    - "{{ groups['kms'] }}"
+    - "{{ groups['kms'] }}"
+
+  
+- name: Setting up firewall rules for kms external ports
+  security: portlist="{{ kms_external_ports }}" policy=all
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['kms'] }}"
+
+
+- name: Setting up firewall rules for hdfs dn internal ports
+  security: portlist="{{ hdfs_dn_internal_ports }}" destlist="{{ hostvars[item[0]].ansible_default_ipv4.address }}" policy=all
+  delegate_to: "{{ item[1] }}"
+  with_nested:
+    - "{{ groups['datanodes'] }}"
+    - "{{ groups['datanodes'] }}"
+
+
+- name: Setting up firewall rules for hdfs dn external ports
+  security: portlist="{{ hdfs_dn_external_ports }}" policy=all
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['datanodes'] }}"
+
+
+- name: Setting up firewall rules for hdfs dn internal ports
+  security: portlist="{{ hdfs_dn_internal_ports }}" destlist="{{ hostvars[item[0]].ansible_default_ipv4.address }}" policy=all
+  delegate_to: "{{ item[1] }}"
+  with_nested:
+    - "{{ groups['hadoop_hosts'] }}"
+    - "{{ groups['hadoop_hosts'] }}"
+  when: "{{ groups['datanodes'] | length}} == 0"
+ 
+
+- name: Setting up firewall rules for hdfs dn external ports
+  security: portlist="{{ hdfs_dn_external_ports }}" policy=all
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['hadoop_hosts'] }}"
+  when: "{{ groups['datanodes'] | length}} == 0"
+
+
+- name: Setting up firewall rules for hdfs nn internal ports
+  security: portlist="{{ hdfs_nn_internal_ports }}" destlist="{{ hostvars[item[0]].ansible_default_ipv4.address }}" policy=all
+  delegate_to: "{{ item[1] }}"
+  with_nested:
+    - "{{ groups['namenode'] }}"
+    - "{{ groups['namenode'] }}"
+
+
+- name: Setting up firewall rules for hdfs nn external ports
+  security: portlist="{{ hdfs_nn_external_ports }}" policy=all
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['namenode'] }}"
+
+
+- name: Setting up firewall rules for hdfs nn internal ports
+  security: portlist="{{ hdfs_nn_internal_ports }}" destlist="{{ hostvars[item[0]].ansible_default_ipv4.address }}" policy=all
+  delegate_to: "{{ item[1] }}"
+  with_nested:
+    - "{{ groups['cloudera_master'] }}"
+    - "{{ groups['cloudera_master'] }}"
+  when: "{{ groups['namenode'] | length}} == 0"
+
+- name: Setting up firewall rules for hdfs nn external ports
+  security: portlist="{{ hdfs_nn_external_ports }}" policy=all
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['cloudera_master'] }}"
+  when: "{{ groups['namenode'] | length}} == 0"
+
+
+- name: Setting up firewall rules for hdfs nn internal ports
+  security: portlist="{{ hdfs_snn_internal_ports }}" destlist="{{ hostvars[item[0]].ansible_default_ipv4.address }}" policy=all
+  delegate_to: "{{ item[1] }}"
+  with_nested:
+    - "{{ groups['secondarynn'] }}"
+    - "{{ groups['secondarynn'] }}"
+
+
+- name: Setting up firewall rules for hdfs nn internal ports
+  security: portlist="{{ hdfs_snn_internal_ports }}" destlist="{{ hostvars[item[0]].ansible_default_ipv4.address }}" policy=all
+  delegate_to: "{{ item[1] }}"
+  with_nested:
+    - "{{ groups['hadoop_hosts'] }}"
+    - "{{ groups['hadoop_hosts'] }}"
+  when: "{{ groups['secondarynn'] | length}} == 0"
+
+
+- name: Setting up firewall rules for yarn nm internal ports
+  security: portlist="{{ yarn_nm_internal_ports }}" destlist="{{ hostvars[item[0]].ansible_default_ipv4.address }}" policy=all
+  delegate_to: "{{ item[1] }}"
+  with_nested:
+    - "{{ groups['datanodes'] }}"
+    - "{{ groups['datanodes'] }}"
+
+
+- name: Setting up firewall rules for yarn nm external ports
+  security: portlist="{{ yarn_nm_external_ports }}" policy=all
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['datanodes'] }}"
+
+
+- name: Setting up firewall rules for yarn nm internal ports
+  security: portlist="{{ yarn_nm_internal_ports }}" destlist="{{ hostvars[item[0]].ansible_default_ipv4.address }}" policy=all
+  delegate_to: "{{ item[1] }}"
+  with_nested:
+    - "{{ groups['hadoop_hosts'] }}"
+    - "{{ groups['hadoop_hosts'] }}"
+  when: "{{ groups['datanodes'] | length}} == 0"
+
+
+- name: Setting up firewall rules for yarn nm external ports
+  security: portlist="{{ yarn_nm_external_ports }}" policy=all
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['hadoop_hosts'] }}"
+  when: "{{ groups['datanodes'] | length}} == 0"
+
+
+- name: Setting up firewall rules for yarn rm internal ports
+  security: portlist="{{ yarn_rm_internal_ports }}" destlist="{{ hostvars[item[0]].ansible_default_ipv4.address }}" policy=all
+  delegate_to: "{{ item[1] }}"
+  with_nested:
+    - "{{ groups['hadoop_hosts'] }}"
+    - "{{ groups['resourcemanager'] }}"
+
+
+- name: Setting up firewall rules for yarn rm external ports
+  security: portlist="{{ yarn_rm_external_ports }}" policy=all
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['resourcemanager'] }}"
+
+
+- name: Setting up firewall rules for yarn rm internal ports
+  security: portlist="{{ yarn_rm_internal_ports }}" destlist="{{ hostvars[item[0]].ansible_default_ipv4.address }}" policy=all
+  delegate_to: "{{ item[1] }}"
+  with_nested:
+    - "{{ groups['hadoop_hosts'] }}"
+    - "{{ groups['cloudera_master'] }}"
+  when: "{{ groups['resourcemanager'] | length}} == 0"
+
+
+- name: Setting up firewall rules for yarn rm external ports
+  security: portlist="{{ yarn_rm_external_ports }}" policy=all
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['cloudera_master'] }}"
+  when: "{{ groups['resourcemanager'] | length}} == 0"
+
+
+- name: Setting up firewall rules for zookeeper internal ports
+  security: portlist="{{ zookeeper_internal_ports }}" destlist="{{ hostvars[item[0]].ansible_default_ipv4.address }}" policy=all
+  delegate_to: "{{ item[1] }}"
+  with_nested:
+    - "{{ groups['zookeeper'] }}"
+    - "{{ groups['zookeeper'] }}"
+
+
+- name: Setting up firewall rules for yarn nm external ports
+  security: portlist="{{ zookeeper_external_ports }}" policy=all
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['zookeeper'] }}"
+
+
+- name: Setting up firewall rules for standbynamenode internal ports
+  security: portlist="{{ hdfs_nn_internal_ports }}" destlist="{{ hostvars[item[0]].ansible_default_ipv4.address }}" policy=all
+  delegate_to: "{{ item[1] }}"
+  with_nested:
+    - "{{ groups['standbynamenode'] }}"
+    - "{{ groups['standbynamenode'] }}"
+
+
+- name: Setting up firewall rules for standbynamenode external ports
+  security: portlist="{{ hdfs_nn_external_ports }}" policy=all
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['standbynamenode'] }}"
+
+
+- name: Setting up firewall rules for standbyresourcemanager internal ports
+  security: portlist="{{ yarn_rm_internal_ports }}" destlist="{{ hostvars[item[0]].ansible_default_ipv4.address }}" policy=all
+  delegate_to: "{{ item[1] }}"
+  with_nested:
+    - "{{ groups['hadoop_hosts'] }}"
+    - "{{ groups['standbyresourcemanager'] }}"
+
+
+- name: Setting up firewall rules for standbyresourcemanager external ports
+  security: portlist="{{ yarn_rm_external_ports }}" policy=all
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['standbyresourcemanager'] }}"
+
+
+- name: Setting up firewall rules for MapReduce job internal ports
+  security: portlist="1024-65535" destlist="{{ hostvars[item[0]].ansible_default_ipv4.address }}" policy=all
+  delegate_to: "{{ item[1] }}"
+  with_nested:
+    - "{{ groups['hadoop_hosts'] }}"
+    - "{{ groups['hadoop_hosts'] }}"
+  when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7'"
+
+
+- name: Setting up firewall rules for internal ports for localhost
+  security: portlist="0:65535" destlist="127.0.0.1" policy=all
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['hadoop_hosts'] }}"
+  when: ansible_distribution_major_version != '7'
+
+
+- name: Setting up firewall rules for MapReduce job internal ports
+  security: portlist="0:65535" destlist="{{ hostvars[item[0]].ansible_default_ipv4.address }}" policy=all
+  delegate_to: "{{ item[1] }}"
+  with_nested:
+    - "{{ groups['hadoop_hosts'] }}"
+    - "{{ groups['hadoop_hosts'] }}"
+  when: "ansible_distribution_major_version != '7'"
+
+
+- name: Stop firewall in RedHat 7
+  service: name=firewalld state=stopped
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['hadoop_hosts'] }}"
+  when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7'"
+  notify:
+    - Start firewalld
+
+
+- name: Stop firewall in RedHat 6
+  service: name=iptables state=stopped
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['hadoop_hosts'] }}"
+  when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version == '6'"
+  notify:
+    - Start iptables
+
+ 
+- name: Calling notify for Ubuntu
+  command: echo "Calling notify for Ubuntu"
+  notify:
+    - Start iptables-ubuntu
+  when: "ansible_os_family == 'Debian'"
+
+
+
+

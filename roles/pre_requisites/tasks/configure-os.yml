@@ -1,0 +1,27 @@
+---
+################################################################################
+# Configuring repository of operating system on which cluster will be deployed #
+################################################################################
+   
+ - name: Preparing repo for Redhat 
+   get_url: url={{OS_REPO}} dest=/etc/yum.repos.d/centos.repo force=yes
+   when: ansible_os_family == 'RedHat'
+
+
+ - name: Preparing repo for Ubuntu
+   get_url: url={{OS_REPO}} dest=/etc/apt/sources.list.d/ubuntu.list force=yes
+   when: ansible_os_family == 'Debian'
+ 
+ - name: clean all
+   shell: yum clean all
+   when: ansible_os_family == 'RedHat'
+
+ - name: repolist
+   shell: yum repolist
+   when: ansible_os_family == 'RedHat'
+
+ - name: update
+   shell: apt-get update
+   when: ansible_os_family == 'Debian'
+
+

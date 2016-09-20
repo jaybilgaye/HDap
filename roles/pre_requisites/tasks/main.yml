@@ -1,0 +1,31 @@
+---
+##########################################################################################
+#                                                                                        #
+# This will configure all the host operating system according to hadoop preprequisite.   #
+# The high level flow of playbook will be as follow:                                     #
+# a. Configure OS repository                                                             #      
+# b. DNS name                                                                            #
+# c. Selinux                                                                             #
+# d. Ntp                                                                                 #       
+##########################################################################################
+
+- name: Create dir for files
+  file:
+    path: "/opt/{{FLAVOUR}}"
+    state: directory
+
+- name: Get file_exists into register
+  stat: path="/opt/{{FLAVOUR}}/pre_req"
+  register: file_exists
+
+- include: configure-os.yml
+  when: "DOMAIN == 'local' and not file_exists.stat.exists"
+
+- include: configure-pre.yml
+  when: not file_exists.stat.exists
+ 
+- include: install-pre.yml
+  when: not file_exists.stat.exists
+ 
+- name: Create pre_req file
+  file: path="/opt/{{FLAVOUR}}/pre_req" state=touch

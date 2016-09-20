@@ -1,0 +1,30 @@
+---
+#################################
+# Configuring passwordless ssh  #
+#################################
+
+
+- name: Relaxing StrictHostKeyChecking
+  lineinfile:
+    dest: /etc/ssh/ssh_config
+    regexp: .*Strict.*
+    line: StrictHostKeyChecking no
+
+- name: Creating User
+  user:
+    name: "{{ANSIBLE_USER}}"
+    state: present
+    generate_ssh_key: yes
+
+- name: Get contents of id_rsa.pub
+  shell: cat ~/.ssh/id_rsa.pub
+  register: idrsapub
+  become: true
+  become_user: "{{ANSIBLE_USER}}"
+
+- name: Add id_rsa.pub in authorized_keys on remote machine
+  authorized_key:
+    key: "{{idrsapub.stdout}}"
+    user: "{{ANSIBLE_USER}}"
+  delegate_to: "{{item}}"
+  with_items: "{{groups['ODP_hadoop']}}"

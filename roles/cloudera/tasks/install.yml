@@ -1,0 +1,24 @@
+---
+################################################################################
+# This will install and start the cloudera server on the cloudera_master host  #
+################################################################################
+
+- name: Install Cloudera packages
+  package:
+    name: "{{item}}"
+    state: present
+  with_items:
+    - cloudera-manager-daemons 
+    - cloudera-manager-server 
+    - cloudera-manager-server-db-2 
+
+- name: start cloudera-scm-server-db
+  service:
+    name: cloudera-scm-server-db
+    state: started
+
+- name: start cloudera-scm-server
+  service:
+    name: cloudera-scm-server
+    state: started
+

@@ -1,0 +1,49 @@
+---
+####################################################################
+# Configuring postgresql and setting up external hive metastore db # 
+####################################################################
+
+ - name: Install postgresql-jdbc for hive
+   package: name={{item}} state=present
+   with_items:
+       - postgresql-server
+
+ - name: Postgresql initdb (Redhat 7 family)
+   shell: postgresql-setup initdb
+   args:
+     creates: /var/lib/pgsql/data/pg_hba.conf
+   when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7'"
+
+ - name: Postgresql initdb (Redhat 6 family)
+   shell: service postgresql initdb
+   args:
+     creates: /var/lib/pgsql/data/pg_hba.conf
+   when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version == '6'" 
+
+ - name: Configure  hadoop-ipaddr method to trust in pg_hba.conf
+   lineinfile:
+    dest: /var/lib/pgsql/data/pg_hba.conf
+    insertafter: "^# IPv4 local connections:"
+    line: "host    all         all        {{ hostvars[item].ansible_default_ipv4.address }}/32        trust"
+   with_items: groups['ODP_hadoop']
+
+ - name: Start postgresql
+   service:
+    name: postgresql
+    state: started
+
+ - name: Changing permission for /usr/share/java/postgresql-jdbc.jar
+   shell: chmod 644 /usr/share/java/postgresql-jdbc.jar
+
+ - name: Create a database for hive
+   shell: echo "CREATE DATABASE hive;" | sudo -u postgres psql -U postgres
+
+ - debug: '{{HIVE_METASTORE_PASSWORD}}'
+
+ - name:  Create a user and password for hive
+   shell: echo "CREATE USER hive WITH PASSWORD '{{HIVE_METASTORE_PASSWORD}}';" | sudo -u postgres psql -U postgres
+
+ - name: granting permission to hive user  for hive database
+   shell: echo "GRANT ALL PRIVILEGES ON DATABASE hive TO hive;" | sudo -u postgres psql -U postgres
+
+

@@ -1,0 +1,5 @@
+{ "blueprint":"blueprint",
+  "default_password" : "{{ ambari_pass }}",
+  "host_groups": [
+    { "name":"master",
+      "hosts":[ {
