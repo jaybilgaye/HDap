@@ -4,7 +4,7 @@
 ####################################################################
 
 ### Common variables ###
-ANSIBLE_USER: vikram # User who has a sudo access on all hosts
+ANSIBLE_USER: hadoop # User who has a sudo access on all hosts
 DOMAIN: local # Acceptable values: local, internet
 CLUSTER: Cluster1 # Name of Hadoop cluster
 FLAVOUR: hdp # Acceptable values: cdh, hdp, bi
@@ -14,36 +14,36 @@ NAMESERVICE: nameservice1
 
 
 ### Variables need to be changed, if domain is local (intranet) ###
-NTP_SERVER: 10.77.224.101 # Internal time server IP for time sync
-OS_REPO: http://bigdata.persistent.co.in/CentOS/mirror.centos.org/cent-os/7/centos7.repo #URL of OS repo
+NTP_SERVER: 10.0.0.4 # Internal time server IP for time sync
+OS_REPO: http://mirror.centos.org/centos/7/CentOS-Base.repo #URL of OS repo
 
 
 ### Variables for Cloudera ###
-CDH_VER: 5.6.0 # Cloudera version which you want to install 
-CM_BASE_URL: http://bigdata.persistent.co.in/cloudera/version-5/archive.cloudera.com/cm5/redhat/7/x86_64/cm/5.6.0/ # Base URL of CM repo 
-CDH_PARCELS_REPO: http://bigdata.persistent.co.in/Addon/cdh-parcels/cdh5/parcelsFor7/5.6.0/,http://bigdata.persistent.co.in/Addon/cdh-parcels/kafka/parcels/2.0.1/ # URL of parcels (CDH and KAFKA)
-DEBIAN_CM_KEY: http://bigdata.persistent.co.in/cloudera/version-5/archive.cloudera.com/cm5/ubuntu/cm/archive.key # Path of CM archive.key for pub-key verification
+CDH_VER: 5.8.0 # Cloudera version which you want to install 
+CM_BASE_URL: http://archive.cloudera.com/cm5/redhat/7/x86_64/cm/5.8.0/ # Base URL of CM repo 
+CDH_PARCELS_REPO: http://archive.cloudera.com/cdh5/parcels/5.8.0/,http://archive.cloudera.com/kafka/parcels/2/ # URL of parcels (CDH and KAFKA) seperated by comma
+DEBIAN_CM_KEY: http://archive.cloudera.com/cm5/ubuntu/trusty/amd64/cm/archive.key # Path of CM archive.key for pub-key verification
 
 
 ### Variables for Ambari (HDP/BI) ###
-AMBARI_REPO: http://bigdata.persistent.co.in/HDP/ambari-2.2.1.0-centos7  # Base URL of Ambari repo
+AMBARI_REPO: http://public-repo-1.hortonworks.com/ambari/centos6/2.x/updates/2.2.1.0  # Base URL of Ambari repo
 LOG_DIR: /var/log # Log dir for all services
 DATANODE_DATA_DIR: /data/hadoop/ # Data dir of datanodes
-JAVA_URL: http://bigdata.persistent.co.in/Addon/java/jdk-7u71-linux-x64.tar.gz # URL of Java
+JAVA_URL: http://www.oracle.com/java/jdk-7u71-linux-x64.tar.gz # URL of Java tar file if domain is local
 
 
 ### Variables for HDP only ###
 HDP_VER: 2.4 # HDP major version
 HDP_UTILS_VER: 1.1.0.20 # HDP utils version
-HDP_REPO: http://bigdata.persistent.co.in/HDP/2.4.0.0-centos7 # Base URL of HDP repo
-HDP_UTILS_REPO:  http://bigdata.persistent.co.in/HDP/hdp2.3-centos7/HDP-UTILS-1.1.0.20/ # Base URL of HDP utils repo
+HDP_REPO: http://public-repo-1.hortonworks.com/HDP/centos7/2.x/updates/2.4.0.0 # Base URL of HDP repo
+HDP_UTILS_REPO:  http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.20/repos/centos7 # Base URL of HDP utils repo
 
 
 ### Variables for BI only ###
 BI_VER: 4.1 # BI major version
 BI_IOP_VER: 1.1 # BI IOP version
-BI_REPO: http://bigdata.persistent.co.in/BI/BIGINSIGHTS-4.1-centos7/ # Base URL of BI repo
-BI_UTILS_REPO:  http://bigdata.persistent.co.in/BI/BIGINSIGHTS-4.1-IOPUTILS-centos7/ # Base URL of BI IOP utils repo
+BI_REPO: https://ibm-open-platform.ibm.com/repos/IOP/rhel/7/x86_64/4.2.x/Updates/4.2.0.0_20160721/ # Base URL of BI repo
+BI_UTILS_REPO:  https://ibm-open-platform.ibm.com/repos/IOP-UTILS/rhel/7/x86_64/1.2/ # Base URL of BI IOP utils repo
 
 
 
