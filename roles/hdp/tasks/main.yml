@@ -55,4 +55,4 @@
      - include: blueprints.yml
      - file: path=/opt/hdp/clusterstat state=touch
      - debug: msg="Watch HDP installation progress at '{{groups['ambari-server'][0]}}:8080'. Login with Username - admin and Password - admin"
-   when: "not clusterflag.stat.exists and groups['ambari-server'][0]==ansible_default_ipv4.address"
+   when: "not clusterflag.stat.exists and ( groups['ambari-server'][0]==ansible_default_ipv4.address or groups['ambari-server'][0]==ansible_fqdn )"
