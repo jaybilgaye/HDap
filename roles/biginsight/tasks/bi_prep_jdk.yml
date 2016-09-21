@@ -7,7 +7,7 @@
       file: path=/usr/java/jdk state=directory owner=root group=root mode=0755 recurse=yes
 
     - name: Download jdk-7u71
-      get_url: url=http://bigdata.persistent.co.in/Addon/java/jdk-7u71-linux-x64.tar.gz dest=/tmp/java.tar.gz owner=root mode=0644
+      get_url: url={{ JAVA_URL }} dest=/tmp/java.tar.gz owner=root mode=0644
 
     - name: Extract jdk-7u71-linux-x64.tar.gz under /usr/java
       shell: tar -xf /tmp/java.tar.gz -C /usr/java/jdk --strip-components=1
