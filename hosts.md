@@ -1,6 +1,6 @@
 # Hosts
 
-This file contains the information about the IP address of all hosts in the hadoop cluster. The host file is divided into two section: one for Ambari hadoop installation for HDP or BI and another one for Cloudera hadoop.
+This file contains the information about the IP address / Host name of all hosts in the hadoop cluster. The host file is divided into two section: one for Ambari hadoop installation for HDP or BI and another one for Cloudera hadoop.
 
 ### Ambari_hosts
 * List of hosts which will be required for installing hadoop cluster of hortanworks or BigInsights over ambari.  
