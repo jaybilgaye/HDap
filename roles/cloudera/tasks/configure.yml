@@ -755,11 +755,11 @@
   with_items: "{{groups['hadoop_hosts']}}"
   args:
     creates: /opt/cdh/hbase_gateway
-  when: "DATANODE_SIZE > '0' and {{ groups['resourcemanager'] | length}} != 0"
+  when: "{{ groups['hbase'] | length}} != 0 and {{ groups['resourcemanager'] | length}} != 0"
 
 - name: Create hbase_gateway file
   file: path=/opt/cdh/hbase_gateway state=touch
-  when: "DATANODE_SIZE > '0' and {{ groups['resourcemanager'] | length}} != 0"
+  when: "{{ groups['hbase'] | length}} != 0 and {{ groups['resourcemanager'] | length}} != 0"
 
 
 - name: Auto assign roles
@@ -789,11 +789,11 @@
   with_items: "{{groups['hadoop_hosts']}}"
   args:
     creates: /opt/cdh/hive_gateway
-  when: "DATANODE_SIZE > '0'"
+  when: "{{ groups['hive_nodes'] | length}} != 0"
 
 - name: Create hive_gateway file
   file: path=/opt/cdh/hive_gateway state=touch
-  when: "DATANODE_SIZE > '0'"
+  when: "{{ groups['hive_nodes'] | length}} != 0"
 
 
 - name: Create GATEWAY role in SPARK_ON_YARN service
@@ -808,11 +808,11 @@
   with_items: "{{groups['hadoop_hosts']}}"
   args:
     creates: /opt/cdh/spark_on_yarn_gateway
-  when: "DATANODE_SIZE > '0'"
+  when: "{{ groups['spark_on_yarn'] | length}} != 0"
 
 - name: Create spark_on_yarn_gateway file
   file: path=/opt/cdh/spark_on_yarn_gateway state=touch
-  when: "DATANODE_SIZE > '0'"
+  when: "{{ groups['spark_on_yarn'] | length}} != 0"
 
 
 - name: Create GATEWAY role in HDFS service
